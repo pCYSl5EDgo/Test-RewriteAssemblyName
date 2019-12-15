@@ -25,34 +25,55 @@ namespace post
         public int Rewrite
         (
             [Option(0)] string directory
-            //,[Option(1)] string outputDirectory
+        //,[Option(1)] string outputDirectory
         )
         {
             var directories = InterpretDirectory(directory);
 
             var list = Collect(directories, true);
 
-            var oldName = new List<string>(list.Count);
+            var oldName = new string[list.Count];
+
+            var nameDictionary = new Dictionary<string, string>();
+            for (int i = 0; i < list.Count; i++)
+            {
+                var name = new string(Enumerable.Repeat('a', i + 2).ToArray());
+                var assemblyDefinition = list[i];
+                oldName[i] = assemblyDefinition.Name.Name;
+                nameDictionary.Add(oldName[i], name);
+            }
 
             for (var i = 0; i < list.Count; i++)
             {
-                var name = new string(Enumerable.Repeat('a', i + 2).ToArray());
-                oldName.Add(list[i].Name.Name);
-                list[i].Name.Name = name;
+                var assemblyDefinition = list[i];
+                var name = nameDictionary[oldName[i]];
+                var mainModule = assemblyDefinition.MainModule;
+                mainModule.Name = name;
+                assemblyDefinition.Name.Name = name;
+
+                foreach (var assemblyNameReference in mainModule.AssemblyReferences)
+                {
+                    if (!nameDictionary.TryGetValue(assemblyNameReference.Name, out var respondedName)) continue;
+                    assemblyNameReference.Name = respondedName;
+                }
+
+                Console.WriteLine(name);
+                Console.WriteLine("Reference Count : " + mainModule.AssemblyReferences.Count);
+                Console.WriteLine(assemblyDefinition.Modules.Count);
             }
 
             foreach (var assemblyDefinition in list)
             {
                 assemblyDefinition.Write();
             }
-/*
-            for (int i = 0; i < list.Count; i++)
-            {
-                string ext = ".dll";
-                if (oldName[i] == "E")
-                    ext = ".exe";
-                list[i].Write(Path.Combine(outputDirectory, ));
-            }*/
+            /*
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            string ext = ".dll";
+                            if (oldName[i] == "E")
+                                ext = ".exe";
+                            list[i].Write(Path.Combine(outputDirectory, ));
+                        }*/
 
             return 0;
         }
