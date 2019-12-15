@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "post": {
+      "commandName": "Project",
+      "commandLineArgs": "rewrite \"C:\\Users\\conve\\source\\repos\\rewrite-asm-name\\E\\bin\\Release\\netcoreapp3.1\""
+    }
+  }
+}
